@@ -15,7 +15,7 @@ export default function Navbar() {
   if (status !== "authenticated") return null;
 
   return (
-    <nav className="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-50">
+    <nav className="bg-gradient-to-b from-gray-900 to-gray-800 text-white  shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 md:h-20">
           {/* Logo */}
@@ -34,7 +34,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center space-x-1">
             <Link
               href="/blogs"
-              className="px-4 py-2 text-gray-700 font-medium rounded-lg hover:bg-green-50 hover:text-green-600 transition-all duration-200"
+              className="px-4 py-2  font-medium rounded-lg hover:bg-green-50 hover:text-green-600 transition-all duration-200"
             >
               Blogs
             </Link>
@@ -42,7 +42,7 @@ export default function Navbar() {
           {session?.user?.role === "admin" && (
             <Link
               href="/admin/dashboard"
-              className="px-4 py-2 text-gray-700 font-medium rounded-lg hover:bg-green-50 hover:text-green-600 transition-all duration-200"
+              className="px-4 py-2  font-medium rounded-lg hover:bg-green-50 hover:text-green-600 transition-all duration-200"
             >
               Dashboard
             </Link>
@@ -51,10 +51,8 @@ export default function Navbar() {
           <div className="hidden md:flex items-center space-x-4">
             {status === "authenticated" && session ? (
               <>
-                <div className="text-sm text-gray-600">
-                  <span className="font-medium text-gray-800">
-                    {session.user?.email}
-                  </span>
+                <div className="text-sm ">
+                  <span className="font-medium ">{session.user?.email}</span>
                 </div>
                 <button
                   onClick={handleLogout}
@@ -120,10 +118,8 @@ export default function Navbar() {
             <div className="pt-4 border-t border-gray-100 space-y-3">
               {status === "authenticated" && session ? (
                 <>
-                  <div className="px-4 text-sm text-gray-600">
-                    <span className="font-medium text-gray-800">
-                      {session.user?.email}
-                    </span>
+                  <div className="px-4 text-sm">
+                    <span className="font-medium ">{session.user?.email}</span>
                   </div>
                   <button
                     onClick={() => {
