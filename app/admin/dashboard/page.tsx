@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   Menu,
   X,
@@ -38,6 +38,9 @@ export default function AdminDashboard() {
     type: "success" | "error";
     text: string;
   } | null>(null);
+  const imageUploadRef = useRef<{ uploadImage: () => Promise<string | null> }>(
+    null
+  );
 
   const handleMenuClick = (menuName: string) => {
     setActiveMenu(menuName);
@@ -58,17 +61,31 @@ export default function AdminDashboard() {
     setMessage(null);
 
     try {
+      // Upload image if one is selected
+      let imageUrl = "";
+      if (imageUploadRef.current) {
+        imageUrl = (await imageUploadRef.current.uploadImage()) || "";
+        console.log("Uploaded image URL:", imageUrl);
+      }
+
+      console.log("Sending to API:", {
+        title: formData.title,
+        content: formData.content,
+        imageUrl,
+      });
+
       const response = await fetch("/api/admin/blogs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: formData.title,
           content: formData.content,
-          authorEmail: formData.email,
+          imageUrl,
         }),
       });
 
       const data = await response.json();
+      console.log("Response from API:", data);
 
       if (response.ok) {
         setMessage({ type: "success", text: "Blog published successfully!" });
@@ -241,6 +258,7 @@ export default function AdminDashboard() {
                       className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-gray-900 placeholder-gray-500 transition-colors focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                     />
                   </div>
+                  <ImageUpload ref={imageUploadRef} />
 
                   {/* Submit Button */}
                   <button
@@ -302,7 +320,6 @@ export default function AdminDashboard() {
                 <p className="mt-2 text-gray-600">
                   Welcome to the {activeMenu} section
                 </p>
-                <ImageUpload />
               </div>
             </div>
           )}
