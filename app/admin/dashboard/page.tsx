@@ -11,6 +11,7 @@ import {
   AlertCircle,
   CheckCircle,
 } from "lucide-react";
+import ImageUpload from "@/components/UploadImage";
 
 interface MenuItem {
   name: string;
@@ -301,6 +302,7 @@ export default function AdminDashboard() {
                 <p className="mt-2 text-gray-600">
                   Welcome to the {activeMenu} section
                 </p>
+                <ImageUpload />
               </div>
             </div>
           )}
