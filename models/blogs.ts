@@ -6,8 +6,7 @@ export interface IBlog extends Document {
   authorEmail?: string;
   imageUrl?: string;
   createdAt: Date;
-  updatet: Date;
-  ghhgfht;
+  updatedAt: Date;
 }
 
 const BlogSchema = new Schema<IBlog>(
