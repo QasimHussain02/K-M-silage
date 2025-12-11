@@ -4,6 +4,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { format } from "date-fns";
+import Comments from "@/components/Comments";
 
 interface BlogDetailsProps {
   params: { id: string };
@@ -166,6 +167,11 @@ export default async function BlogDetails({ params }: BlogDetailsProps) {
           </div>
         </div>
       </article>
+
+      {/* Comments Section */}
+      <div className="bg-white">
+        <Comments blogId={blog._id.toString()} />
+      </div>
 
       {/* Related Articles Section (Optional) */}
       <section className="bg-gray-100 py-16 mt-16">

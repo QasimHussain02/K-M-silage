@@ -65,7 +65,8 @@ export const authOptions: NextAuthOptions = {
       user?: NextAuthUser & { role?: string };
     }) {
       if (user) {
-        token.role = user.role; // Save role in JWT
+        token.role = user.role;
+        token.name = user.name; // Save role in JWT
       }
       return token;
     },
