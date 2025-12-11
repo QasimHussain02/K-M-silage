@@ -2,6 +2,7 @@
 import { IBlog } from "@/models/blogs";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Blogs() {
   const [blogs, setBlogs] = useState<IBlog[]>([]);
@@ -54,60 +55,63 @@ export default function Blogs() {
       {/* Blog Grid Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 items-stretch">
             {blogs.map((blog) => (
-              <article
+              <Link
                 key={blog._id?.toString() || Math.random().toString()}
-                className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 cursor-pointer"
+                href={`/blogs/${blog._id}`}
               >
-                {/* Image Container */}
-                <div className="relative h-48 md:h-56 overflow-hidden bg-gray-200">
-                  <Image
-                    src={
-                      blog.imageUrl ||
-                      "https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=500&h=300&fit=crop"
-                    }
-                    alt={blog.title}
-                    width={500}
-                    height={300}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
+                <article className="h-full flex flex-col group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 cursor-pointer">
+                  {/* Image Container */}
+                  <div className="relative h-48 md:h-56 overflow-hidden bg-gray-200">
+                    <Image
+                      src={
+                        blog.imageUrl ||
+                        "https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=500&h=300&fit=crop"
+                      }
+                      alt={blog.title}
+                      width={500}
+                      height={300}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
 
-                  {/* Overlay Gradient */}
-                  <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                </div>
-
-                {/* Content Container */}
-                <div className="p-6 md:p-7">
-                  {/* Title */}
-                  <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors duration-300">
-                    {blog.title}
-                  </h2>
-
-                  {/* Description */}
-                  <p className="text-gray-600 text-sm md:text-base leading-relaxed mb-5 line-clamp-3">
-                    {truncateText(blog.content, 20)} {/* show first 20 words */}
-                  </p>
-
-                  {/* Read More Link */}
-                  <div className="flex items-center gap-2 text-blue-600 font-semibold text-sm hover:gap-3 transition-all duration-300">
-                    <span>Read Article</span>
-                    <svg
-                      className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
+                    {/* Overlay Gradient */}
+                    <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </div>
-                </div>
-              </article>
+
+                  {/* Content Container */}
+                  <div className="p-6 md:p-7 flex flex-col flex-grow">
+                    {/* Title */}
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors duration-300">
+                      {blog.title}
+                    </h2>
+
+                    {/* Description */}
+                    <p className="text-gray-600 text-sm md:text-base leading-relaxed mb-5 line-clamp-3">
+                      {truncateText(blog.content, 20)}{" "}
+                      {/* show first 20 words */}
+                    </p>
+
+                    {/* Read More Link */}
+                    <div className="flex items-center mt-auto gap-2 text-blue-600 font-semibold text-sm hover:gap-3 transition-all duration-300">
+                      <span>Read Article</span>
+                      <svg
+                        className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                </article>
+              </Link>
             ))}
           </div>
         </div>

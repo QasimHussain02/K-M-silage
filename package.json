@@ -12,6 +12,7 @@
     "axios": "^1.13.2",
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.8.0",
+    "date-fns": "^4.1.0",
     "lucide-react": "^0.556.0",
     "mongodb": "^7.0.0",
     "mongoose": "^9.0.1",
