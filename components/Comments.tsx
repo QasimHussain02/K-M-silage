@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { MessageCircle, Send } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { MessageCircle, Send, MoreVertical } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -21,11 +21,19 @@ interface CommentsSectionProps {
 }
 
 const Comments = ({ blogId }: CommentsSectionProps) => {
+  const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editedContent, setEditedContent] = useState("");
+
+  const [replyText, setReplyText] = useState("");
   const { data: session } = useSession();
   const [comments, setComments] = useState<CommentData[]>([]);
   const [newComment, setNewComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const editTextareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
     const fetchComments = async () => {
@@ -48,6 +56,25 @@ const Comments = ({ blogId }: CommentsSectionProps) => {
       fetchComments();
     }
   }, [blogId]);
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setActiveMenuId(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+  useEffect(() => {
+    if (editingCommentId && editTextareaRef.current) {
+      editTextareaRef.current.focus();
+    }
+  }, [editingCommentId]);
+
   const handlePostComments = async () => {
     if (!session) {
       setError("You must be logged in to comment.");
@@ -84,6 +111,68 @@ const Comments = ({ blogId }: CommentsSectionProps) => {
     }
   };
   // Sample comments data for demonstration
+  const handleSaveEdit = (commentId: string) => async () => {
+    console.log("hello");
+
+    if (!editedContent.trim()) return;
+    try {
+      const res = await fetch(`/api/comments/${commentId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ content: editedContent }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to update comment");
+      }
+
+      // Update comment locally (important for fast UX)
+      setComments((prev) =>
+        prev.map((comment) =>
+          comment._id === commentId
+            ? { ...comment, content: editedContent }
+            : comment
+        )
+      );
+      console.log(data.message);
+      // Exit edit mode
+      setEditingCommentId(null);
+      setEditedContent("");
+    } catch (error) {
+      console.error("Edit failed:", error);
+      alert("Failed to update comment");
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    try {
+      const res = await fetch(`/api/comments/${commentId}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || "Failed to delete comment");
+      }
+
+      // Remove comment from UI
+      setComments((prev) =>
+        prev.filter((comment) => comment._id !== commentId)
+      );
+
+      // Cleanup UI states
+      setActiveMenuId(null);
+      setActiveReplyId(null);
+      setEditingCommentId(null);
+    } catch (err) {
+      console.error("Delete failed:", err);
+      alert("Failed to delete comment. Please try again.");
+    }
+  };
 
   return (
     <section className="py-12">
@@ -110,8 +199,46 @@ const Comments = ({ blogId }: CommentsSectionProps) => {
             comments.map((comment, index) => (
               <div
                 key={comment._id}
-                className="group bg-white rounded-xl border border-gray-200 p-6 md:p-8 shadow-sm hover:shadow-md transition-all duration-300 hover:border-blue-300 hover:bg-blue-50/30"
+                className="relative group bg-white rounded-xl border border-gray-200 p-6 md:p-8 shadow-sm hover:shadow-md transition-all duration-300 hover:border-blue-300 hover:bg-blue-50/30"
               >
+                {/* Three Dots Menu */}
+                <div className="absolute top-4 right-4" ref={menuRef}>
+                  <button
+                    onClick={() =>
+                      setActiveMenuId(
+                        activeMenuId === comment._id ? null : comment._id
+                      )
+                    }
+                    className="p-2 rounded-full hover:bg-gray-100 transition"
+                  >
+                    <MoreVertical className="w-5 h-5 text-gray-500" />
+                  </button>
+
+                  {/* Dropdown */}
+                  {activeMenuId === comment._id && (
+                    <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-20 overflow-hidden">
+                      <button
+                        className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 text-gray-700"
+                        onClick={() => {
+                          setEditingCommentId(comment._id);
+                          setEditedContent(comment.content);
+                          setActiveMenuId(null);
+                        }}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="w-full px-4 py-2 text-left text-sm hover:bg-red-50 text-red-600"
+                        onClick={() =>
+                          handleDeleteComment(comment._id.toString())
+                        }
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+
                 {/* Comment Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                   <div className="flex-1">
@@ -126,22 +253,86 @@ const Comments = ({ blogId }: CommentsSectionProps) => {
                         : "just now"}
                     </p>
                   </div>
+
                   <div className="flex gap-2">
                     <button className="px-3 py-1 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200">
                       Like
                     </button>
-                    <button className="px-3 py-1 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200">
+                    <button
+                      className="px-3 py-1 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+                      onClick={() =>
+                        setActiveReplyId(
+                          activeReplyId === comment._id ? null : comment._id
+                        )
+                      }
+                    >
                       Reply
                     </button>
                   </div>
                 </div>
 
                 {/* Comment Text */}
-                <p className="text-gray-700 leading-relaxed text-sm md:text-base line-clamp-none">
-                  {comment.content}
-                </p>
+                {editingCommentId === comment._id ? (
+                  <div className="mt-2">
+                    <textarea
+                      ref={editTextareaRef}
+                      value={editedContent}
+                      onChange={(e) => setEditedContent(e.target.value)}
+                      rows={4}
+                      className="w-full px-4 py-3 bg-white border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none transition-all"
+                    />
 
-                {/* Bottom Separator (not on last item) */}
+                    <div className="flex justify-end gap-2 mt-3">
+                      <button
+                        className="px-4 py-2 text-sm bg-gray-200 rounded-lg hover:bg-gray-300 transition"
+                        onClick={() => setEditingCommentId(null)}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                        onClick={handleSaveEdit(comment._id.toString())}
+                      >
+                        Save
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-gray-700 leading-relaxed text-sm md:text-base">
+                    {comment.content}
+                  </p>
+                )}
+
+                {/* Reply Section */}
+                {activeReplyId === comment._id && (
+                  <div className="mt-4 ml-6 p-4 bg-gray-50 rounded-xl border border-gray-200 shadow-sm">
+                    <h4 className="text-sm font-semibold mb-2">
+                      Reply to {comment.userName}
+                    </h4>
+
+                    <textarea
+                      rows={4}
+                      value={replyText}
+                      onChange={(e) => setReplyText(e.target.value)}
+                      placeholder="Write your reply here..."
+                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 resize-none"
+                    />
+
+                    <div className="flex justify-end gap-2 mt-3">
+                      <button
+                        onClick={() => setActiveReplyId(null)}
+                        className="px-4 py-2 bg-gray-200 rounded-lg"
+                      >
+                        Cancel
+                      </button>
+                      <button className="px-4 py-2 bg-blue-600 text-white rounded-lg">
+                        Reply
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Separator */}
                 {index < comments.length - 1 && (
                   <div className="mt-6 pt-6 border-t border-gray-100" />
                 )}
