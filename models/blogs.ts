@@ -7,7 +7,7 @@ export interface IBlog extends Document {
   imageUrl?: string;
   createdAt: Date;
   updatet: Date;
-  ghhgfht;
+  likes: string[]; // array of user IDs
 }
 
 const BlogSchema = new Schema<IBlog>(
@@ -16,6 +16,12 @@ const BlogSchema = new Schema<IBlog>(
     content: { type: String, required: true },
     authorEmail: { type: String },
     imageUrl: { type: String },
+    likes: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
   },
   { timestamps: true }
 );

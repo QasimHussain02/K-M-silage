@@ -12,6 +12,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import ImageUpload from "@/components/UploadImage";
+import UsersTable from "@/components/UsersTable";
 
 interface MenuItem {
   name: string;
@@ -184,7 +185,9 @@ export default function AdminDashboard() {
 
         {/* Content Area */}
         <div className="p-4 md:p-8">
-          {activeMenu === "Blogs" ? (
+          {activeMenu === "Users" ? (
+            <UsersTable />
+          ) : activeMenu === "Blogs" ? (
             <div className="mx-auto max-w-2xl">
               {/* Header */}
               <div className="mb-8">

@@ -13,10 +13,10 @@ const MIN_COMMENT_LENGTH = 1;
 function sanitize(input: string) {
   return input.replace(/<\/?[^>]+(>|$)/g, "").trim();
 }
-interface BlogDetailsProps {
+export interface paramsProps {
   params: { id: string };
 }
-export async function GET(req: NextRequest, { params }: BlogDetailsProps) {
+export async function GET(req: NextRequest, { params }: paramsProps) {
   const { id } = await params;
   const blogId = id;
   const url = new URL(req.url);
@@ -55,7 +55,7 @@ export async function GET(req: NextRequest, { params }: BlogDetailsProps) {
     );
   }
 }
-export async function POST(req: NextRequest, { params }: BlogDetailsProps) {
+export async function POST(req: NextRequest, { params }: paramsProps) {
   const { id } = await params;
   const blogId = id;
   try {

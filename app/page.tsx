@@ -179,16 +179,6 @@ export default function HomePage() {
                 </p>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4">
-                <button className="px-8 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-200 transform hover:shadow-lg hover:scale-105 flex items-center justify-center space-x-2">
-                  <span>Get a Free Quote</span>
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-                <button className="px-8 py-3 border-2 border-green-600 text-green-600 hover:bg-green-50 font-semibold rounded-lg transition-all duration-200">
-                  Learn More
-                </button>
-              </div>
-
               {/* Trust badges */}
               <div className="flex items-center space-x-6 pt-4">
                 <div className="flex items-center space-x-1">

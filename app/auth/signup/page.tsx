@@ -140,24 +140,6 @@ export default function SignupPage() {
               />
             </div>
 
-            {/* Terms and Conditions */}
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="terms"
-                className="w-4 h-4 text-green-600 rounded border-gray-300 focus:ring-green-500 cursor-pointer"
-              />
-              <label htmlFor="terms" className="ml-2 text-sm text-gray-600">
-                I agree to the{" "}
-                <a
-                  href="#"
-                  className="text-green-600 hover:text-green-700 font-medium transition"
-                >
-                  Terms and Conditions
-                </a>
-              </label>
-            </div>
-
             {/* Error Message */}
             {error && (
               <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">

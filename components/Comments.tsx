@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { MessageCircle, Send, MoreVertical } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { formatDistanceToNow } from "date-fns";
+import { set } from "mongoose";
 
 interface CommentData {
   _id: string;
@@ -14,6 +15,7 @@ interface CommentData {
   content: string;
   createdAt: string;
   updatedAt?: string;
+  parentId: string | null;
 }
 
 interface CommentsSectionProps {
@@ -26,7 +28,6 @@ const Comments = ({ blogId }: CommentsSectionProps) => {
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editedContent, setEditedContent] = useState("");
 
-  const [replyText, setReplyText] = useState("");
   const { data: session } = useSession();
   const [comments, setComments] = useState<CommentData[]>([]);
   const [newComment, setNewComment] = useState("");
@@ -34,6 +35,8 @@ const Comments = ({ blogId }: CommentsSectionProps) => {
   const [error, setError] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const editTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const [replyTo, setReplyTo] = useState<string | null>(null); // Which comment is being replied to
+  const [replyText, setReplyText] = useState(""); // Text for the reply
 
   useEffect(() => {
     const fetchComments = async () => {
@@ -173,6 +176,36 @@ const Comments = ({ blogId }: CommentsSectionProps) => {
       alert("Failed to delete comment. Please try again.");
     }
   };
+  const handlePostReply = async () => {
+    if (!replyTo) return;
+
+    try {
+      const res = await fetch(`/api/blogs/${blogId}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content: replyText,
+          parentId: replyTo, // This makes it a reply
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setComments((prev) => [...prev, data.comment]); // Add reply to state
+        setReplyText("");
+        setReplyTo(null); // Close reply textarea
+        setActiveReplyId(null);
+      } else {
+        console.error(data.message);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const topLevelComments = comments.filter((c) => !c.parentId);
+  const replies = comments.filter((c) => c.parentId);
 
   return (
     <section className="py-12">
@@ -184,9 +217,6 @@ const Comments = ({ blogId }: CommentsSectionProps) => {
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
               Comments
             </h2>
-            <span className="ml-2 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold">
-              {comments.length}
-            </span>
           </div>
           <p className="text-gray-600 text-sm md:text-base">
             Join the discussion and share your thoughts on this article
@@ -195,8 +225,8 @@ const Comments = ({ blogId }: CommentsSectionProps) => {
 
         {/* Comments List */}
         <div className="space-y-4 mb-8">
-          {comments.length > 0 ? (
-            comments.map((comment, index) => (
+          {topLevelComments.length > 0 ? (
+            topLevelComments.map((comment, index) => (
               <div
                 key={comment._id}
                 className="relative group bg-white rounded-xl border border-gray-200 p-6 md:p-8 shadow-sm hover:shadow-md transition-all duration-300 hover:border-blue-300 hover:bg-blue-50/30"
@@ -255,16 +285,14 @@ const Comments = ({ blogId }: CommentsSectionProps) => {
                   </div>
 
                   <div className="flex gap-2">
-                    <button className="px-3 py-1 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200">
-                      Like
-                    </button>
                     <button
                       className="px-3 py-1 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
-                      onClick={() =>
+                      onClick={() => {
                         setActiveReplyId(
                           activeReplyId === comment._id ? null : comment._id
-                        )
-                      }
+                        );
+                        setReplyTo(comment._id);
+                      }}
                     >
                       Reply
                     </button>
@@ -325,15 +353,35 @@ const Comments = ({ blogId }: CommentsSectionProps) => {
                       >
                         Cancel
                       </button>
-                      <button className="px-4 py-2 bg-blue-600 text-white rounded-lg">
+                      <button
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+                        onClick={handlePostReply}
+                      >
                         Reply
                       </button>
                     </div>
                   </div>
                 )}
-
+                {/* Replies Container */}
+                <div className="mt-4 ml-6 space-y-3">
+                  {replies
+                    .filter((c) => c.parentId === comment._id)
+                    .map((reply) => (
+                      <div
+                        key={reply._id}
+                        className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200"
+                      >
+                        <h4 className="font-semibold text-gray-900">
+                          {reply.userName}
+                        </h4>
+                        <p className="text-gray-700 text-sm md:text-base">
+                          {reply.content}
+                        </p>
+                      </div>
+                    ))}
+                </div>
                 {/* Separator */}
-                {index < comments.length - 1 && (
+                {index < topLevelComments.length - 1 && (
                   <div className="mt-6 pt-6 border-t border-gray-100" />
                 )}
               </div>
@@ -347,13 +395,6 @@ const Comments = ({ blogId }: CommentsSectionProps) => {
               </p>
             </div>
           )}
-        </div>
-
-        {/* No More Comments Message */}
-        <div className="text-center py-8 mb-12">
-          <p className="text-gray-600 text-sm">
-            Showing all {comments.length} comments
-          </p>
         </div>
 
         {/* Divider */}

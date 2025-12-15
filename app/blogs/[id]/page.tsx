@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { format } from "date-fns";
 import Comments from "@/components/Comments";
+import LikeButton from "@/components/LikeButton";
 
 interface BlogDetailsProps {
   params: { id: string };
@@ -110,6 +111,7 @@ export default async function BlogDetails({ params }: BlogDetailsProps) {
             />
           </div>
         )}
+        {/* <LikeButton blogId={blog._id.toString()} likes={blog.likes} /> */}
 
         {/* Blog Content */}
         <div className="prose prose-lg max-w-none mb-12">

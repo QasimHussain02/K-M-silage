@@ -15,6 +15,7 @@ declare module "next-auth" {
   interface Session {
     user: User & {
       role?: string;
+      id?: string;
     };
   }
 }
@@ -22,6 +23,7 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     role?: string;
+    id?: string;
   }
 }
 
@@ -52,6 +54,7 @@ export const authOptions: NextAuthOptions = {
           id: user._id.toString(),
           email: user.email,
           role: user.role,
+          name: user.name,
         } as NextAuthUser & { role?: string };
       },
     }),
@@ -66,13 +69,15 @@ export const authOptions: NextAuthOptions = {
     }) {
       if (user) {
         token.role = user.role;
-        token.name = user.name; // Save role in JWT
+        token.name = user.name;
+        token.id = user.id; // Save role in JWT
       }
       return token;
     },
     async session({ session, token }: { session: Session; token: JWT }) {
       if (session.user) {
-        session.user.role = token.role; // Add role to session
+        session.user.role = token.role;
+        session.user.id = token.id as string;
       }
       return session;
     },

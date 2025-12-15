@@ -6,6 +6,7 @@ import Link from "next/link";
 import { MoreVertical, Edit2, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation"; // For Next 13+ App Router
+import LikeButton from "@/components/LikeButton";
 
 interface OpenMenuId {
   [key: string]: boolean;
